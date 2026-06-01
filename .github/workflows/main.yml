@@ -7,9 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: 'FloodPrev'            # Nome exato do seu Web Service na Azure
-  AZURE_WEBAPP_PACKAGE_PATH: '.'            # Raiz do projeto Flask
-  PYTHON_VERSION: '3.11'                     # A versão do Python do seu projeto
+  AZURE_WEBAPP_NAME: 'FloodPrev'
 
 jobs:
   build-and-deploy:
@@ -22,7 +20,7 @@ jobs:
     - name: Set up Python version
       uses: actions/setup-python@v5
       with:
-        python-version: ${{ env.PYTHON_VERSION }}
+        python-version: '3.11'
         cache: 'pip'
 
     - name: Install dependencies
@@ -30,9 +28,11 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: 'Deploy to Azure WebApp'
-      uses: azure/webapps-deploy@v3
-      with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+    - name: Zip application
+      run: zip -r deploy.zip . -x "*.git*" ".github*"
+
+    - name: Deploy to Azure WebApp via GitHub Token
+      run: |
+        curl -X POST -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+        https://@${{ env.AZURE_WEBAPP_NAME }}.scm.azurewebsites.net/api/zipdeploy \
+        --data-binary @deploy.zip
