@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: FloodPrev    # Substitua pelo nome do seu App Service
+  AZURE_WEBAPP_NAME: FloodPrev
   AZURE_WEBAPP_PACKAGE_PATH: '.'          # Substitua pelo caminho da sua aplicação
   PYTHON_VERSION: '3.11'                   # Substitua pela versão do Python da sua aplicação
 
