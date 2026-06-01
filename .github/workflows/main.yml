@@ -6,10 +6,15 @@ on:
       - main
   workflow_dispatch:
 
+# Permissões obrigatórias para autenticação OIDC (Segurança DevSecOps)
+permissions:
+  id-token: write
+  contents: read
+
 env:
-  AZURE_WEBAPP_NAME: FloodPrev    # Substitua pelo nome exato do seu App Service na Azure
-  AZURE_WEBAPP_PACKAGE_PATH: '.'            # Mantenha '.' se o app estiver na raiz do projeto
-  PYTHON_VERSION: '3.11'                     # Substitua pela sua versão do Python (ex: '3.10', '3.11')
+  AZURE_WEBAPP_NAME: 'FloodPrev'            # Nome exato do seu App Service na Azure
+  AZURE_WEBAPP_PACKAGE_PATH: '.'            # Raiz do projeto Flask
+  PYTHON_VERSION: '3.11'                     # Versão do Python utilizada
 
 jobs:
   build-and-deploy:
@@ -30,10 +35,12 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: 'Login to Azure'
+    - name: 'Login to Azure via OIDC'
       uses: azure/login@v2
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
     - name: 'Deploy to Azure WebApp'
       uses: azure/webapps-deploy@v3
