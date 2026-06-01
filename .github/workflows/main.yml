@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: FloodPrev
-  AZURE_WEBAPP_PACKAGE_PATH: '.'          # Substitua pelo caminho da sua aplicação
-  PYTHON_VERSION: '3.11'                   # Substitua pela versão do Python da sua aplicação
+  AZURE_WEBAPP_NAME: FloodPrev    # Substitua pelo nome exato do seu App Service na Azure
+  AZURE_WEBAPP_PACKAGE_PATH: '.'            # Mantenha '.' se o app estiver na raiz do projeto
+  PYTHON_VERSION: '3.11'                     # Substitua pela sua versão do Python (ex: '3.10', '3.11')
 
 jobs:
   build-and-deploy:
@@ -36,7 +36,7 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: 'Deploy to Azure WebApp'
-      uses: azure/webapp-deploy@v3
+      uses: azure/webapp-deploy@v2
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
