@@ -1,41 +1,44 @@
-name: Deploy Web App to Azure
+name: Flask CI (Integração Contínua)
 
+# O fluxo roda a cada push ou pull request na branch principal
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
-
-env:
-  AZURE_WEBAPP_NAME: FloodPrev    # Substitua pelo nome do seu App Service
-  AZURE_WEBAPP_PACKAGE_PATH: 'floodprev.azurewebsites.net'          # Substitua pelo caminho da sua aplicação
-  PYTHON_VERSION: '3.11'                   # Substitua pela versão do Python da sua aplicação
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+  test-and-verify:
+    runs-on: ubuntu-latest # Sistema operacional da máquina virtual
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      # Passo 1: Baixa o código do seu repositório para a máquina do GitHub
+      - name: Baixar código do repositório
+        uses: actions/checkout@v4
 
-    - name: Set up Python version
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
+      # Passo 2: Instala o Python na máquina virtual
+      - name: Configurar o Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' # Coloque a versão do Python que você está usando
+          cache: 'pip' # Ativa o cache para instalar as próximas vezes muito mais rápido
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      # Passo 3: Atualiza o pip e instala as dependências do requirements.txt
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: 'Login to Azure'
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # Passo 4: Rodar testes automatizados (Se você usar pytest ou unittest)
+      # Se você não tiver testes ainda, pode deixar essa parte comentada com #
+      - name: Rodar testes com Pytest
+        run: |
+          pip install pytest # Garante que o pytest está instalado para o teste
+          pytest
 
-    - name: 'Deploy to Azure WebApp'
-      uses: azure/webapp-deploy@v2
-      with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      # Passo 5: Validar a sintaxe do código (Opcional - evita erros bobos de digitação)
+      - name: Verificar erros de sintaxe (Linting)
+        run: |
+          pip install flake8
+          # Para o build se houver erros de sintaxe Python
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
